@@ -33,3 +33,25 @@ class Process:
 
     def __str__(self):
         return f"P{self.pid}"
+
+class SchedulerEngine:
+    def __init__(self):
+        self.processes = []
+        self.current_time = 0
+        self.schedule = []
+        self.completed_processes = []
+        self.quantum = 2  # Default quantum for Round Robin
+
+    def add_process(self, pid, arrival_time, burst_time, priority=0):
+        self.processes.append(Process(pid, arrival_time, burst_time, priority))
+
+    def reset(self):
+        self.current_time = 0
+        self.schedule = []
+        self.completed_processes = []
+        for process in self.processes:
+            process.reset()
+
+    def clear_all_processes(self):
+        self.processes = []
+        self.reset()
