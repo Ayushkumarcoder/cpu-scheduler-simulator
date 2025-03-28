@@ -210,4 +210,58 @@ class SchedulerEngine:
         
         return self.get_results()
 
-      
+     def priority_scheduling(self, preemptive=True):
+        self.reset()
+        remaining_processes = copy.deepcopy(self.processes)
+        
+        while remaining_processes:
+            # Find processes that have arrived
+            available_processes = [p for p in remaining_processes if p.arrival_time <= self.current_time]
+            
+            if available_processes:
+                # Sort by priority (lower value = higher priority)
+                available_processes.sort(key=lambda p: (p.priority, p.arrival_time, p.pid))
+                current_process = available_processes[0]
+                
+                # If process is starting for the first time
+                if current_process.start_time is None:
+                    current_process.start_time = self.current_time
+                    current_process.response_time = self.current_time - current_process.arrival_time
+                
+                # Determine how long to run
+                if preemptive:
+                    # Find next arrival time
+                    next_event_time = float('inf')
+                    for p in remaining_processes:
+                        if p.arrival_time > self.current_time and p.arrival_time < next_event_time:
+                            next_event_time = p.arrival_time
+                    
+                    run_time = min(current_process.remaining_time, next_event_time - self.current_time)
+                    if run_time == float('inf'):  # No future arrivals
+                        run_time = current_process.remaining_time
+                else:
+                    run_time = current_process.remaining_time
+                
+                # Execute the process
+                current_process.execution_history.append((self.current_time, self.current_time + run_time))
+                self.schedule.append((str(current_process), self.current_time, self.current_time + run_time))
+                self.current_time += run_time
+                current_process.remaining_time -= run_time
+                
+                # Check if process is complete
+                if current_process.remaining_time == 0:
+                    current_process.finish_time = self.current_time
+                    current_process.turnaround_time = current_process.finish_time - current_process.arrival_time
+                    current_process.waiting_time = current_process.turnaround_time - current_process.burst_time
+                    self.completed_processes.append(current_process)
+                    
+                    # Find corresponding process in remaining_processes
+                    for i, p in enumerate(remaining_processes):
+                        if p.pid == current_process.pid:
+                            remaining_processes.pop(i)
+                            break
+            else:
+                # No process available, advance time to next arrival
+                self.current_time = min(p.arrival_time for p in remaining_processes)
+                
+        return self.get_results()
