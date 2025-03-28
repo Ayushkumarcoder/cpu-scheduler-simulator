@@ -61,14 +61,13 @@ print(results)
 ### Flowchart of Execution
 ```mermaid
 graph TD;
-    Start -->|User Input| Add_Process;
-    Add_Process -->|Add Process (PID, Arrival, Burst, Priority)| Algorithm_Selection;
-    Algorithm_Selection -->|Choose Algorithm (FCFS, SJF, RR, Priority)| Configuration;
-    Configuration -->|Set Preemption (SJF/Priority) or Quantum (RR)| Run_Simulation;
-    Run_Simulation -->|Scheduler Engine Executes Algorithm| Results_Generated;
-    Results_Generated -->|Generate Schedule, Metrics, Process Details| Visualization;
-    Visualization -->|Update Gantt Chart, Metrics, Process Table| End;
-```
+    Start -->|"User Input"| Add_Process;
+    Add_Process -->|"Add Process (PID, Arrival, Burst, Priority)"| Algorithm_Selection;
+    Algorithm_Selection -->|"Choose Algorithm (FCFS, SJF, RR, Priority)"| Configuration;
+    Configuration -->|"Set Preemption (SJF/Priority) or Quantum (RR)"| Run_Simulation;
+    Run_Simulation -->|"Scheduler Engine Executes Algorithm"| Results_Generated;
+    Results_Generated -->|"Generate Schedule, Metrics, Process Details"| Visualization;
+    Visualization -->|"Update Gantt Chart, Metrics, Process Table"| End;
 
 ## Code Structure
 ```
