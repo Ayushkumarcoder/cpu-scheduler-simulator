@@ -151,4 +151,63 @@ class SchedulerEngine:
                 
         return self.get_results()
 
+        def round_robin(self):
+        self.reset()
+        remaining_processes = copy.deepcopy(self.processes)
+        ready_queue = deque()
         
+        # Initial queue setup
+        current_process = None
+        
+        while remaining_processes or ready_queue or current_process:
+            # Check for new arrivals
+            new_arrivals = [p for p in remaining_processes if p.arrival_time <= self.current_time]
+            for process in new_arrivals:
+                ready_queue.append(process)
+                remaining_processes.remove(process)
+            
+            # If no process is running, get one from the queue
+            if current_process is None:
+                if ready_queue:
+                    current_process = ready_queue.popleft()
+                    # If process is starting for the first time
+                    if current_process.start_time is None:
+                        current_process.start_time = self.current_time
+                        current_process.response_time = self.current_time - current_process.arrival_time
+                else:
+                    # No process available, advance time to next arrival
+                    if remaining_processes:
+                        self.current_time = min(p.arrival_time for p in remaining_processes)
+                        continue
+                    else:
+                        break  # No more processes to execute
+            
+            # Execute for quantum or remaining time
+            run_time = min(self.quantum, current_process.remaining_time)
+            current_process.execution_history.append((self.current_time, self.current_time + run_time))
+            self.schedule.append((str(current_process), self.current_time, self.current_time + run_time))
+            self.current_time += run_time
+            current_process.remaining_time -= run_time
+            
+            # Check for new arrivals again after execution
+            new_arrivals = [p for p in remaining_processes if p.arrival_time <= self.current_time]
+            for process in new_arrivals:
+                ready_queue.append(process)
+                remaining_processes.remove(process)
+            
+            # Process the current process
+            if current_process.remaining_time == 0:
+                # Process completed
+                current_process.finish_time = self.current_time
+                current_process.turnaround_time = current_process.finish_time - current_process.arrival_time
+                current_process.waiting_time = current_process.turnaround_time - current_process.burst_time
+                self.completed_processes.append(current_process)
+                current_process = None
+            else:
+                # Process needs more time, back to ready queue
+                ready_queue.append(current_process)
+                current_process = None
+        
+        return self.get_results()
+
+      
