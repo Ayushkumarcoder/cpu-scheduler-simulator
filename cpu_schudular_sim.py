@@ -265,3 +265,19 @@ class SchedulerEngine:
                 self.current_time = min(p.arrival_time for p in remaining_processes)
                 
         return self.get_results()
+
+        def get_results(self):
+        # Sort by PID for consistent display
+        self.completed_processes.sort(key=lambda p: p.pid)
+        
+        avg_waiting_time = np.mean([p.waiting_time for p in self.completed_processes]) if self.completed_processes else 0
+        avg_turnaround_time = np.mean([p.turnaround_time for p in self.completed_processes]) if self.completed_processes else 0
+        avg_response_time = np.mean([p.response_time for p in self.completed_processes]) if self.completed_processes else 0
+        
+        return {
+            'schedule': self.schedule,
+            'processes': self.completed_processes,
+            'avg_waiting_time': avg_waiting_time,
+            'avg_turnaround_time': avg_turnaround_time,
+            'avg_response_time': avg_response_time
+        }
