@@ -55,3 +55,42 @@ class SchedulerEngine:
     def clear_all_processes(self):
         self.processes = []
         self.reset()
+    
+     def fcfs(self):
+        self.reset()
+        remaining_processes = sorted(copy.deepcopy(self.processes), key=lambda p: (p.arrival_time, p.pid))
+        
+        while remaining_processes:
+            # Find the process that has arrived
+            available_process = None
+            for process in remaining_processes:
+                if process.arrival_time <= self.current_time:
+                    available_process = process
+                    break
+            
+            if available_process:
+                # If process is starting for the first time
+                if available_process.start_time is None:
+                    available_process.start_time = self.current_time
+                    available_process.response_time = self.current_time - available_process.arrival_time
+
+                # Execute the process
+                time_slice = available_process.remaining_time
+                available_process.execution_history.append((self.current_time, self.current_time + time_slice))
+                self.schedule.append((str(available_process), self.current_time, self.current_time + time_slice))
+                
+                # Update times
+                self.current_time += time_slice
+                available_process.remaining_time = 0
+                available_process.finish_time = self.current_time
+                available_process.turnaround_time = available_process.finish_time - available_process.arrival_time
+                available_process.waiting_time = available_process.turnaround_time - available_process.burst_time
+                
+                # Add to completed and remove from remaining
+                self.completed_processes.append(available_process)
+                remaining_processes.remove(available_process)
+            else:
+                # No process available, advance time to next arrival
+                self.current_time = min(p.arrival_time for p in remaining_processes)
+
+        return self.get_results()
